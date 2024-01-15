@@ -1,4 +1,4 @@
-#imports modules which allows pyton to interact with operating system
+#imports modules which allows python to interact with operating system
 import os
 import shutil
 import datetime
