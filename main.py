@@ -1,7 +1,13 @@
-#imports module wich allows pyton to interact with operating system
+#imports modules which allows pyton to interact with operating system
 import os
 import shutil
 import datetime
+from time import sleep
+
+import logging
+
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
 
 # main path for folder to be sorted
 download_folder = r"C:\Users\jansk\Downloads"
@@ -64,9 +70,11 @@ def check_modification_time(item_path):
 
 #if check_modification_time(item, item_path) and not os.path.isdir(item):
 
-def recent_files_mover(item, item_path):
-    shutil.move(item_path, os.path.join(recent_dw_folder, item))
 
+def recent_files_mover(item, item_path):
+    if not item.endswith(".tmp"):
+        shutil.move(item_path, os.path.join(recent_dw_folder, item))
+        logging.info(f"Moved recently downloaded file: {item}")
 
 def recent_files_folder_check():
     for item in os.listdir(recent_dw_folder):
@@ -77,46 +85,57 @@ def recent_files_folder_check():
 def sort_audios(item, item_path):
     if item.lower().endswith(audio_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Music", item))
+        logging.info(f"Moved audio file: {item}")
 
 def sort_videos(item, item_path):
     if item.lower().endswith(video_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Film", item))
+        logging.info(f"Moved video file: {item}")
 
 def sort_images(item, item_path):
     if item.lower().endswith(image_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Image", item))
+        logging.info(f"Moved image file: {item}")
 
 def sort_installers(item, item_path):
     if item.lower().endswith(installer_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Installer", item))
+        logging.info(f"Moved installer file: {item}")
 
 def sort_compressed(item, item_path):
     if item.lower().endswith(compressed_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Compressed", item))
+        logging.info(f"Moved compressed file: {item}")
 
 def sort_documents(item, item_path):
     if item.lower().endswith(document_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Pdf", item))
+        logging.info(f"Moved pdf file: {item}")
 
 def sort_texts(item, item_path):
     if item.lower().endswith(text_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Text", item))
+        logging.info(f"Moved text file: {item}")
 
 def sort_spreadsheets(item, item_path):
     if item.lower().endswith(spreadsheet_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Spreadsheet", item))
+        logging.info(f"Moved spreadsheet file: {item}")
 
 def sort_presentations(item, item_path):
     if item.lower().endswith(presentation_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Presentation", item))
+        logging.info(f"Moved PowerPoint file: {item}")
 
 def sort_fonts(item, item_path):
     if item.lower().endswith(font_extensions):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Font", item))
+        logging.info(f"Moved font file: {item}")
 
 def sort_other(item, item_path):
-    if os.path.isfile(item_path) and not item.lower().endswith(all_extensions):
+    if os.path.isfile(item_path) and not item.lower().endswith(all_extensions) and not item.endswith(".tmp"):
         shutil.move(item_path, os.path.join(download_folder, "Dw_Other", item))
+        logging.info(f"Moved not recognised file: {item}")
 
 def sort_items():
     create_folders()
@@ -139,19 +158,26 @@ def sort_items():
             sort_fonts(item, item_path)
             sort_other(item, item_path)
 
+# Handles
+class Files_Sorter(FileSystemEventHandler):
+
+    def on_modified(self, event):
+        sort_items()
+
 sort_items()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')
+    path = download_folder
+    event_handler = Files_Sorter()
+    observer = Observer()
+    observer.schedule(event_handler, path, recursive=True)
+    observer.start()
+    try:
+        while True:
+            sleep(10)
+    except KeyboardInterrupt:
+        observer.stop()
+    observer.join()
