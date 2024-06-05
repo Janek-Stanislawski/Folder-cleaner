@@ -9,6 +9,10 @@ import logging
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
+logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S')
+
 # main path for folder to be sorted
 download_folder = r"C:\Users\jansk\Downloads"
 items_to_move = os.listdir(download_folder)
@@ -167,9 +171,6 @@ class Files_Sorter(FileSystemEventHandler):
 sort_items()
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(message)s',
-                        datefmt='%Y-%m-%d %H:%M:%S')
     path = download_folder
     event_handler = Files_Sorter()
     observer = Observer()
